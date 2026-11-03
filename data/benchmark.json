@@ -1,0 +1,1362 @@
+[
+  {
+    "id": "case-000",
+    "repo": "tenant/repo-0",
+    "pr_number": 1,
+    "branch": "eval",
+    "rule": "sql_injection",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++query = \"SELECT * FROM users WHERE id=\" + user_id\n",
+    "expected": [
+      "sql_injection"
+    ],
+    "high_risk": [
+      "sql_injection"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-001",
+    "repo": "tenant/repo-1",
+    "pr_number": 2,
+    "branch": "eval",
+    "rule": "hardcoded_secret",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++API_KEY = \"sk-live-1234567890abcdef\"\n",
+    "expected": [
+      "hardcoded_secret"
+    ],
+    "high_risk": [
+      "hardcoded_secret"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-002",
+    "repo": "tenant/repo-2",
+    "pr_number": 3,
+    "branch": "eval",
+    "rule": "command_injection",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++os.system('ls ' + user_input)\n",
+    "expected": [
+      "command_injection"
+    ],
+    "high_risk": [
+      "command_injection"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-003",
+    "repo": "tenant/repo-3",
+    "pr_number": 4,
+    "branch": "eval",
+    "rule": "path_traversal",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++open(base + user_path)\n",
+    "expected": [
+      "path_traversal"
+    ],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-004",
+    "repo": "tenant/repo-4",
+    "pr_number": 5,
+    "branch": "eval",
+    "rule": "xss",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++el.innerHTML = comment\n",
+    "expected": [
+      "xss"
+    ],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-005",
+    "repo": "tenant/repo-5",
+    "pr_number": 6,
+    "branch": "eval",
+    "rule": "weak_crypto",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++digest = hashlib.md5(password).hexdigest()\n",
+    "expected": [
+      "weak_crypto"
+    ],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-006",
+    "repo": "tenant/repo-6",
+    "pr_number": 7,
+    "branch": "eval",
+    "rule": "ssrf",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++requests.get(request.args['url'])\n",
+    "expected": [
+      "ssrf"
+    ],
+    "high_risk": [
+      "ssrf"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-007",
+    "repo": "tenant/repo-7",
+    "pr_number": 8,
+    "branch": "eval",
+    "rule": "insecure_deserialization",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++obj = pickle.loads(body)\n",
+    "expected": [
+      "insecure_deserialization"
+    ],
+    "high_risk": [
+      "insecure_deserialization"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-008",
+    "repo": "tenant/repo-8",
+    "pr_number": 9,
+    "branch": "eval",
+    "rule": "clean",
+    "diff": "diff --git a/util.py b/util.py\n--- a/util.py\n+++ b/util.py\n@@ -1,2 +1,3 @@\n+def add(a, b):\n+    return a + b\n",
+    "expected": [],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-009",
+    "repo": "tenant/repo-9",
+    "pr_number": 10,
+    "branch": "eval",
+    "rule": "clean",
+    "diff": "diff --git a/util.py b/util.py\n--- a/util.py\n+++ b/util.py\n@@ -1,2 +1,3 @@\n+def add(a, b):\n+    return a + b\n",
+    "expected": [],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-010",
+    "repo": "tenant/repo-0",
+    "pr_number": 11,
+    "branch": "eval",
+    "rule": "sql_injection",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++query = \"SELECT * FROM users WHERE id=\" + user_id\n",
+    "expected": [
+      "sql_injection"
+    ],
+    "high_risk": [
+      "sql_injection"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-011",
+    "repo": "tenant/repo-1",
+    "pr_number": 12,
+    "branch": "eval",
+    "rule": "hardcoded_secret",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++API_KEY = \"sk-live-1234567890abcdef\"\n",
+    "expected": [
+      "hardcoded_secret"
+    ],
+    "high_risk": [
+      "hardcoded_secret"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-012",
+    "repo": "tenant/repo-2",
+    "pr_number": 13,
+    "branch": "eval",
+    "rule": "command_injection",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++os.system('ls ' + user_input)\n",
+    "expected": [
+      "command_injection"
+    ],
+    "high_risk": [
+      "command_injection"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-013",
+    "repo": "tenant/repo-3",
+    "pr_number": 14,
+    "branch": "eval",
+    "rule": "path_traversal",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++open(base + user_path)\n",
+    "expected": [
+      "path_traversal"
+    ],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-014",
+    "repo": "tenant/repo-4",
+    "pr_number": 15,
+    "branch": "eval",
+    "rule": "xss",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++el.innerHTML = comment\n",
+    "expected": [
+      "xss"
+    ],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-015",
+    "repo": "tenant/repo-5",
+    "pr_number": 16,
+    "branch": "eval",
+    "rule": "weak_crypto",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++digest = hashlib.md5(password).hexdigest()\n",
+    "expected": [
+      "weak_crypto"
+    ],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-016",
+    "repo": "tenant/repo-6",
+    "pr_number": 17,
+    "branch": "eval",
+    "rule": "ssrf",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++requests.get(request.args['url'])\n",
+    "expected": [
+      "ssrf"
+    ],
+    "high_risk": [
+      "ssrf"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-017",
+    "repo": "tenant/repo-7",
+    "pr_number": 18,
+    "branch": "eval",
+    "rule": "insecure_deserialization",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++obj = pickle.loads(body)\n",
+    "expected": [
+      "insecure_deserialization"
+    ],
+    "high_risk": [
+      "insecure_deserialization"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-018",
+    "repo": "tenant/repo-8",
+    "pr_number": 19,
+    "branch": "eval",
+    "rule": "clean",
+    "diff": "diff --git a/util.py b/util.py\n--- a/util.py\n+++ b/util.py\n@@ -1,2 +1,3 @@\n+def add(a, b):\n+    return a + b\n",
+    "expected": [],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-019",
+    "repo": "tenant/repo-9",
+    "pr_number": 20,
+    "branch": "eval",
+    "rule": "clean",
+    "diff": "diff --git a/util.py b/util.py\n--- a/util.py\n+++ b/util.py\n@@ -1,2 +1,3 @@\n+def add(a, b):\n+    return a + b\n",
+    "expected": [],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-020",
+    "repo": "tenant/repo-0",
+    "pr_number": 21,
+    "branch": "eval",
+    "rule": "sql_injection",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++query = \"SELECT * FROM users WHERE id=\" + user_id\n",
+    "expected": [
+      "sql_injection"
+    ],
+    "high_risk": [
+      "sql_injection"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-021",
+    "repo": "tenant/repo-1",
+    "pr_number": 22,
+    "branch": "eval",
+    "rule": "hardcoded_secret",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++API_KEY = \"sk-live-1234567890abcdef\"\n",
+    "expected": [
+      "hardcoded_secret"
+    ],
+    "high_risk": [
+      "hardcoded_secret"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-022",
+    "repo": "tenant/repo-2",
+    "pr_number": 23,
+    "branch": "eval",
+    "rule": "command_injection",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++os.system('ls ' + user_input)\n",
+    "expected": [
+      "command_injection"
+    ],
+    "high_risk": [
+      "command_injection"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-023",
+    "repo": "tenant/repo-3",
+    "pr_number": 24,
+    "branch": "eval",
+    "rule": "path_traversal",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++open(base + user_path)\n",
+    "expected": [
+      "path_traversal"
+    ],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-024",
+    "repo": "tenant/repo-4",
+    "pr_number": 25,
+    "branch": "eval",
+    "rule": "xss",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++el.innerHTML = comment\n",
+    "expected": [
+      "xss"
+    ],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-025",
+    "repo": "tenant/repo-5",
+    "pr_number": 26,
+    "branch": "eval",
+    "rule": "weak_crypto",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++digest = hashlib.md5(password).hexdigest()\n",
+    "expected": [
+      "weak_crypto"
+    ],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-026",
+    "repo": "tenant/repo-6",
+    "pr_number": 27,
+    "branch": "eval",
+    "rule": "ssrf",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++requests.get(request.args['url'])\n",
+    "expected": [
+      "ssrf"
+    ],
+    "high_risk": [
+      "ssrf"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-027",
+    "repo": "tenant/repo-7",
+    "pr_number": 28,
+    "branch": "eval",
+    "rule": "insecure_deserialization",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++obj = pickle.loads(body)\n",
+    "expected": [
+      "insecure_deserialization"
+    ],
+    "high_risk": [
+      "insecure_deserialization"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-028",
+    "repo": "tenant/repo-8",
+    "pr_number": 29,
+    "branch": "eval",
+    "rule": "clean",
+    "diff": "diff --git a/util.py b/util.py\n--- a/util.py\n+++ b/util.py\n@@ -1,2 +1,3 @@\n+def add(a, b):\n+    return a + b\n",
+    "expected": [],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-029",
+    "repo": "tenant/repo-9",
+    "pr_number": 30,
+    "branch": "eval",
+    "rule": "clean",
+    "diff": "diff --git a/util.py b/util.py\n--- a/util.py\n+++ b/util.py\n@@ -1,2 +1,3 @@\n+def add(a, b):\n+    return a + b\n",
+    "expected": [],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-030",
+    "repo": "tenant/repo-0",
+    "pr_number": 31,
+    "branch": "eval",
+    "rule": "sql_injection",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++query = \"SELECT * FROM users WHERE id=\" + user_id\n",
+    "expected": [
+      "sql_injection"
+    ],
+    "high_risk": [
+      "sql_injection"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-031",
+    "repo": "tenant/repo-1",
+    "pr_number": 32,
+    "branch": "eval",
+    "rule": "hardcoded_secret",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++API_KEY = \"sk-live-1234567890abcdef\"\n",
+    "expected": [
+      "hardcoded_secret"
+    ],
+    "high_risk": [
+      "hardcoded_secret"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-032",
+    "repo": "tenant/repo-2",
+    "pr_number": 33,
+    "branch": "eval",
+    "rule": "command_injection",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++os.system('ls ' + user_input)\n",
+    "expected": [
+      "command_injection"
+    ],
+    "high_risk": [
+      "command_injection"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-033",
+    "repo": "tenant/repo-3",
+    "pr_number": 34,
+    "branch": "eval",
+    "rule": "path_traversal",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++open(base + user_path)\n",
+    "expected": [
+      "path_traversal"
+    ],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-034",
+    "repo": "tenant/repo-4",
+    "pr_number": 35,
+    "branch": "eval",
+    "rule": "xss",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++el.innerHTML = comment\n",
+    "expected": [
+      "xss"
+    ],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-035",
+    "repo": "tenant/repo-5",
+    "pr_number": 36,
+    "branch": "eval",
+    "rule": "weak_crypto",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++digest = hashlib.md5(password).hexdigest()\n",
+    "expected": [
+      "weak_crypto"
+    ],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-036",
+    "repo": "tenant/repo-6",
+    "pr_number": 37,
+    "branch": "eval",
+    "rule": "ssrf",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++requests.get(request.args['url'])\n",
+    "expected": [
+      "ssrf"
+    ],
+    "high_risk": [
+      "ssrf"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-037",
+    "repo": "tenant/repo-7",
+    "pr_number": 38,
+    "branch": "eval",
+    "rule": "insecure_deserialization",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++obj = pickle.loads(body)\n",
+    "expected": [
+      "insecure_deserialization"
+    ],
+    "high_risk": [
+      "insecure_deserialization"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-038",
+    "repo": "tenant/repo-8",
+    "pr_number": 39,
+    "branch": "eval",
+    "rule": "clean",
+    "diff": "diff --git a/util.py b/util.py\n--- a/util.py\n+++ b/util.py\n@@ -1,2 +1,3 @@\n+def add(a, b):\n+    return a + b\n",
+    "expected": [],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-039",
+    "repo": "tenant/repo-9",
+    "pr_number": 40,
+    "branch": "eval",
+    "rule": "clean",
+    "diff": "diff --git a/util.py b/util.py\n--- a/util.py\n+++ b/util.py\n@@ -1,2 +1,3 @@\n+def add(a, b):\n+    return a + b\n",
+    "expected": [],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-040",
+    "repo": "tenant/repo-0",
+    "pr_number": 41,
+    "branch": "eval",
+    "rule": "sql_injection",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++query = \"SELECT * FROM users WHERE id=\" + user_id\n",
+    "expected": [
+      "sql_injection"
+    ],
+    "high_risk": [
+      "sql_injection"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-041",
+    "repo": "tenant/repo-1",
+    "pr_number": 42,
+    "branch": "eval",
+    "rule": "hardcoded_secret",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++API_KEY = \"sk-live-1234567890abcdef\"\n",
+    "expected": [
+      "hardcoded_secret"
+    ],
+    "high_risk": [
+      "hardcoded_secret"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-042",
+    "repo": "tenant/repo-2",
+    "pr_number": 43,
+    "branch": "eval",
+    "rule": "command_injection",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++os.system('ls ' + user_input)\n",
+    "expected": [
+      "command_injection"
+    ],
+    "high_risk": [
+      "command_injection"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-043",
+    "repo": "tenant/repo-3",
+    "pr_number": 44,
+    "branch": "eval",
+    "rule": "path_traversal",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++open(base + user_path)\n",
+    "expected": [
+      "path_traversal"
+    ],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-044",
+    "repo": "tenant/repo-4",
+    "pr_number": 45,
+    "branch": "eval",
+    "rule": "xss",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++el.innerHTML = comment\n",
+    "expected": [
+      "xss"
+    ],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-045",
+    "repo": "tenant/repo-5",
+    "pr_number": 46,
+    "branch": "eval",
+    "rule": "weak_crypto",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++digest = hashlib.md5(password).hexdigest()\n",
+    "expected": [
+      "weak_crypto"
+    ],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-046",
+    "repo": "tenant/repo-6",
+    "pr_number": 47,
+    "branch": "eval",
+    "rule": "ssrf",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++requests.get(request.args['url'])\n",
+    "expected": [
+      "ssrf"
+    ],
+    "high_risk": [
+      "ssrf"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-047",
+    "repo": "tenant/repo-7",
+    "pr_number": 48,
+    "branch": "eval",
+    "rule": "insecure_deserialization",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++obj = pickle.loads(body)\n",
+    "expected": [
+      "insecure_deserialization"
+    ],
+    "high_risk": [
+      "insecure_deserialization"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-048",
+    "repo": "tenant/repo-8",
+    "pr_number": 49,
+    "branch": "eval",
+    "rule": "clean",
+    "diff": "diff --git a/util.py b/util.py\n--- a/util.py\n+++ b/util.py\n@@ -1,2 +1,3 @@\n+def add(a, b):\n+    return a + b\n",
+    "expected": [],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-049",
+    "repo": "tenant/repo-9",
+    "pr_number": 50,
+    "branch": "eval",
+    "rule": "clean",
+    "diff": "diff --git a/util.py b/util.py\n--- a/util.py\n+++ b/util.py\n@@ -1,2 +1,3 @@\n+def add(a, b):\n+    return a + b\n",
+    "expected": [],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-050",
+    "repo": "tenant/repo-0",
+    "pr_number": 51,
+    "branch": "eval",
+    "rule": "sql_injection",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++query = \"SELECT * FROM users WHERE id=\" + user_id\n",
+    "expected": [
+      "sql_injection"
+    ],
+    "high_risk": [
+      "sql_injection"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-051",
+    "repo": "tenant/repo-1",
+    "pr_number": 52,
+    "branch": "eval",
+    "rule": "hardcoded_secret",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++API_KEY = \"sk-live-1234567890abcdef\"\n",
+    "expected": [
+      "hardcoded_secret"
+    ],
+    "high_risk": [
+      "hardcoded_secret"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-052",
+    "repo": "tenant/repo-2",
+    "pr_number": 53,
+    "branch": "eval",
+    "rule": "command_injection",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++os.system('ls ' + user_input)\n",
+    "expected": [
+      "command_injection"
+    ],
+    "high_risk": [
+      "command_injection"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-053",
+    "repo": "tenant/repo-3",
+    "pr_number": 54,
+    "branch": "eval",
+    "rule": "path_traversal",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++open(base + user_path)\n",
+    "expected": [
+      "path_traversal"
+    ],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-054",
+    "repo": "tenant/repo-4",
+    "pr_number": 55,
+    "branch": "eval",
+    "rule": "xss",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++el.innerHTML = comment\n",
+    "expected": [
+      "xss"
+    ],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-055",
+    "repo": "tenant/repo-5",
+    "pr_number": 56,
+    "branch": "eval",
+    "rule": "weak_crypto",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++digest = hashlib.md5(password).hexdigest()\n",
+    "expected": [
+      "weak_crypto"
+    ],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-056",
+    "repo": "tenant/repo-6",
+    "pr_number": 57,
+    "branch": "eval",
+    "rule": "ssrf",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++requests.get(request.args['url'])\n",
+    "expected": [
+      "ssrf"
+    ],
+    "high_risk": [
+      "ssrf"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-057",
+    "repo": "tenant/repo-7",
+    "pr_number": 58,
+    "branch": "eval",
+    "rule": "insecure_deserialization",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++obj = pickle.loads(body)\n",
+    "expected": [
+      "insecure_deserialization"
+    ],
+    "high_risk": [
+      "insecure_deserialization"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-058",
+    "repo": "tenant/repo-8",
+    "pr_number": 59,
+    "branch": "eval",
+    "rule": "clean",
+    "diff": "diff --git a/util.py b/util.py\n--- a/util.py\n+++ b/util.py\n@@ -1,2 +1,3 @@\n+def add(a, b):\n+    return a + b\n",
+    "expected": [],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-059",
+    "repo": "tenant/repo-9",
+    "pr_number": 60,
+    "branch": "eval",
+    "rule": "clean",
+    "diff": "diff --git a/util.py b/util.py\n--- a/util.py\n+++ b/util.py\n@@ -1,2 +1,3 @@\n+def add(a, b):\n+    return a + b\n",
+    "expected": [],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-060",
+    "repo": "tenant/repo-0",
+    "pr_number": 61,
+    "branch": "eval",
+    "rule": "sql_injection",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++query = \"SELECT * FROM users WHERE id=\" + user_id\n",
+    "expected": [
+      "sql_injection"
+    ],
+    "high_risk": [
+      "sql_injection"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-061",
+    "repo": "tenant/repo-1",
+    "pr_number": 62,
+    "branch": "eval",
+    "rule": "hardcoded_secret",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++API_KEY = \"sk-live-1234567890abcdef\"\n",
+    "expected": [
+      "hardcoded_secret"
+    ],
+    "high_risk": [
+      "hardcoded_secret"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-062",
+    "repo": "tenant/repo-2",
+    "pr_number": 63,
+    "branch": "eval",
+    "rule": "command_injection",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++os.system('ls ' + user_input)\n",
+    "expected": [
+      "command_injection"
+    ],
+    "high_risk": [
+      "command_injection"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-063",
+    "repo": "tenant/repo-3",
+    "pr_number": 64,
+    "branch": "eval",
+    "rule": "path_traversal",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++open(base + user_path)\n",
+    "expected": [
+      "path_traversal"
+    ],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-064",
+    "repo": "tenant/repo-4",
+    "pr_number": 65,
+    "branch": "eval",
+    "rule": "xss",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++el.innerHTML = comment\n",
+    "expected": [
+      "xss"
+    ],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-065",
+    "repo": "tenant/repo-5",
+    "pr_number": 66,
+    "branch": "eval",
+    "rule": "weak_crypto",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++digest = hashlib.md5(password).hexdigest()\n",
+    "expected": [
+      "weak_crypto"
+    ],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-066",
+    "repo": "tenant/repo-6",
+    "pr_number": 67,
+    "branch": "eval",
+    "rule": "ssrf",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++requests.get(request.args['url'])\n",
+    "expected": [
+      "ssrf"
+    ],
+    "high_risk": [
+      "ssrf"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-067",
+    "repo": "tenant/repo-7",
+    "pr_number": 68,
+    "branch": "eval",
+    "rule": "insecure_deserialization",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++obj = pickle.loads(body)\n",
+    "expected": [
+      "insecure_deserialization"
+    ],
+    "high_risk": [
+      "insecure_deserialization"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-068",
+    "repo": "tenant/repo-8",
+    "pr_number": 69,
+    "branch": "eval",
+    "rule": "clean",
+    "diff": "diff --git a/util.py b/util.py\n--- a/util.py\n+++ b/util.py\n@@ -1,2 +1,3 @@\n+def add(a, b):\n+    return a + b\n",
+    "expected": [],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-069",
+    "repo": "tenant/repo-9",
+    "pr_number": 70,
+    "branch": "eval",
+    "rule": "clean",
+    "diff": "diff --git a/util.py b/util.py\n--- a/util.py\n+++ b/util.py\n@@ -1,2 +1,3 @@\n+def add(a, b):\n+    return a + b\n",
+    "expected": [],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-070",
+    "repo": "tenant/repo-0",
+    "pr_number": 71,
+    "branch": "eval",
+    "rule": "sql_injection",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++query = \"SELECT * FROM users WHERE id=\" + user_id\n",
+    "expected": [
+      "sql_injection"
+    ],
+    "high_risk": [
+      "sql_injection"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-071",
+    "repo": "tenant/repo-1",
+    "pr_number": 72,
+    "branch": "eval",
+    "rule": "hardcoded_secret",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++API_KEY = \"sk-live-1234567890abcdef\"\n",
+    "expected": [
+      "hardcoded_secret"
+    ],
+    "high_risk": [
+      "hardcoded_secret"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-072",
+    "repo": "tenant/repo-2",
+    "pr_number": 73,
+    "branch": "eval",
+    "rule": "command_injection",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++os.system('ls ' + user_input)\n",
+    "expected": [
+      "command_injection"
+    ],
+    "high_risk": [
+      "command_injection"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-073",
+    "repo": "tenant/repo-3",
+    "pr_number": 74,
+    "branch": "eval",
+    "rule": "path_traversal",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++open(base + user_path)\n",
+    "expected": [
+      "path_traversal"
+    ],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-074",
+    "repo": "tenant/repo-4",
+    "pr_number": 75,
+    "branch": "eval",
+    "rule": "xss",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++el.innerHTML = comment\n",
+    "expected": [
+      "xss"
+    ],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-075",
+    "repo": "tenant/repo-5",
+    "pr_number": 76,
+    "branch": "eval",
+    "rule": "weak_crypto",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++digest = hashlib.md5(password).hexdigest()\n",
+    "expected": [
+      "weak_crypto"
+    ],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-076",
+    "repo": "tenant/repo-6",
+    "pr_number": 77,
+    "branch": "eval",
+    "rule": "ssrf",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++requests.get(request.args['url'])\n",
+    "expected": [
+      "ssrf"
+    ],
+    "high_risk": [
+      "ssrf"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-077",
+    "repo": "tenant/repo-7",
+    "pr_number": 78,
+    "branch": "eval",
+    "rule": "insecure_deserialization",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++obj = pickle.loads(body)\n",
+    "expected": [
+      "insecure_deserialization"
+    ],
+    "high_risk": [
+      "insecure_deserialization"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-078",
+    "repo": "tenant/repo-8",
+    "pr_number": 79,
+    "branch": "eval",
+    "rule": "clean",
+    "diff": "diff --git a/util.py b/util.py\n--- a/util.py\n+++ b/util.py\n@@ -1,2 +1,3 @@\n+def add(a, b):\n+    return a + b\n",
+    "expected": [],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-079",
+    "repo": "tenant/repo-9",
+    "pr_number": 80,
+    "branch": "eval",
+    "rule": "clean",
+    "diff": "diff --git a/util.py b/util.py\n--- a/util.py\n+++ b/util.py\n@@ -1,2 +1,3 @@\n+def add(a, b):\n+    return a + b\n",
+    "expected": [],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-080",
+    "repo": "tenant/repo-0",
+    "pr_number": 81,
+    "branch": "eval",
+    "rule": "sql_injection",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++query = \"SELECT * FROM users WHERE id=\" + user_id\n",
+    "expected": [
+      "sql_injection"
+    ],
+    "high_risk": [
+      "sql_injection"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-081",
+    "repo": "tenant/repo-1",
+    "pr_number": 82,
+    "branch": "eval",
+    "rule": "hardcoded_secret",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++API_KEY = \"sk-live-1234567890abcdef\"\n",
+    "expected": [
+      "hardcoded_secret"
+    ],
+    "high_risk": [
+      "hardcoded_secret"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-082",
+    "repo": "tenant/repo-2",
+    "pr_number": 83,
+    "branch": "eval",
+    "rule": "command_injection",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++os.system('ls ' + user_input)\n",
+    "expected": [
+      "command_injection"
+    ],
+    "high_risk": [
+      "command_injection"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-083",
+    "repo": "tenant/repo-3",
+    "pr_number": 84,
+    "branch": "eval",
+    "rule": "path_traversal",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++open(base + user_path)\n",
+    "expected": [
+      "path_traversal"
+    ],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-084",
+    "repo": "tenant/repo-4",
+    "pr_number": 85,
+    "branch": "eval",
+    "rule": "xss",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++el.innerHTML = comment\n",
+    "expected": [
+      "xss"
+    ],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-085",
+    "repo": "tenant/repo-5",
+    "pr_number": 86,
+    "branch": "eval",
+    "rule": "weak_crypto",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++digest = hashlib.md5(password).hexdigest()\n",
+    "expected": [
+      "weak_crypto"
+    ],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-086",
+    "repo": "tenant/repo-6",
+    "pr_number": 87,
+    "branch": "eval",
+    "rule": "ssrf",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++requests.get(request.args['url'])\n",
+    "expected": [
+      "ssrf"
+    ],
+    "high_risk": [
+      "ssrf"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-087",
+    "repo": "tenant/repo-7",
+    "pr_number": 88,
+    "branch": "eval",
+    "rule": "insecure_deserialization",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++obj = pickle.loads(body)\n",
+    "expected": [
+      "insecure_deserialization"
+    ],
+    "high_risk": [
+      "insecure_deserialization"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-088",
+    "repo": "tenant/repo-8",
+    "pr_number": 89,
+    "branch": "eval",
+    "rule": "clean",
+    "diff": "diff --git a/util.py b/util.py\n--- a/util.py\n+++ b/util.py\n@@ -1,2 +1,3 @@\n+def add(a, b):\n+    return a + b\n",
+    "expected": [],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-089",
+    "repo": "tenant/repo-9",
+    "pr_number": 90,
+    "branch": "eval",
+    "rule": "clean",
+    "diff": "diff --git a/util.py b/util.py\n--- a/util.py\n+++ b/util.py\n@@ -1,2 +1,3 @@\n+def add(a, b):\n+    return a + b\n",
+    "expected": [],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-090",
+    "repo": "tenant/repo-0",
+    "pr_number": 91,
+    "branch": "eval",
+    "rule": "sql_injection",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++query = \"SELECT * FROM users WHERE id=\" + user_id\n",
+    "expected": [
+      "sql_injection"
+    ],
+    "high_risk": [
+      "sql_injection"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-091",
+    "repo": "tenant/repo-1",
+    "pr_number": 92,
+    "branch": "eval",
+    "rule": "hardcoded_secret",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++API_KEY = \"sk-live-1234567890abcdef\"\n",
+    "expected": [
+      "hardcoded_secret"
+    ],
+    "high_risk": [
+      "hardcoded_secret"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-092",
+    "repo": "tenant/repo-2",
+    "pr_number": 93,
+    "branch": "eval",
+    "rule": "command_injection",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++os.system('ls ' + user_input)\n",
+    "expected": [
+      "command_injection"
+    ],
+    "high_risk": [
+      "command_injection"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-093",
+    "repo": "tenant/repo-3",
+    "pr_number": 94,
+    "branch": "eval",
+    "rule": "path_traversal",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++open(base + user_path)\n",
+    "expected": [
+      "path_traversal"
+    ],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-094",
+    "repo": "tenant/repo-4",
+    "pr_number": 95,
+    "branch": "eval",
+    "rule": "xss",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++el.innerHTML = comment\n",
+    "expected": [
+      "xss"
+    ],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-095",
+    "repo": "tenant/repo-5",
+    "pr_number": 96,
+    "branch": "eval",
+    "rule": "weak_crypto",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++digest = hashlib.md5(password).hexdigest()\n",
+    "expected": [
+      "weak_crypto"
+    ],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-096",
+    "repo": "tenant/repo-6",
+    "pr_number": 97,
+    "branch": "eval",
+    "rule": "ssrf",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++requests.get(request.args['url'])\n",
+    "expected": [
+      "ssrf"
+    ],
+    "high_risk": [
+      "ssrf"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-097",
+    "repo": "tenant/repo-7",
+    "pr_number": 98,
+    "branch": "eval",
+    "rule": "insecure_deserialization",
+    "diff": "diff --git a/app.py b/app.py\n--- a/app.py\n+++ b/app.py\n@@ -1,2 +1,3 @@\n++obj = pickle.loads(body)\n",
+    "expected": [
+      "insecure_deserialization"
+    ],
+    "high_risk": [
+      "insecure_deserialization"
+    ],
+    "split": null
+  },
+  {
+    "id": "case-098",
+    "repo": "tenant/repo-8",
+    "pr_number": 99,
+    "branch": "eval",
+    "rule": "clean",
+    "diff": "diff --git a/util.py b/util.py\n--- a/util.py\n+++ b/util.py\n@@ -1,2 +1,3 @@\n+def add(a, b):\n+    return a + b\n",
+    "expected": [],
+    "high_risk": [],
+    "split": null
+  },
+  {
+    "id": "case-099",
+    "repo": "tenant/repo-9",
+    "pr_number": 100,
+    "branch": "eval",
+    "rule": "clean",
+    "diff": "diff --git a/util.py b/util.py\n--- a/util.py\n+++ b/util.py\n@@ -1,2 +1,3 @@\n+def add(a, b):\n+    return a + b\n",
+    "expected": [],
+    "high_risk": [],
+    "split": null
+  }
+]

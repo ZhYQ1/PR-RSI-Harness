@@ -1,0 +1,54 @@
+services:
+  harness:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - SPARK_API_KEY=${SPARK_API_KEY:-}
+      - SPARK_MODEL=${SPARK_MODEL:-spark-x2.6-4b}
+      - SPARK_BASE_URL=${SPARK_BASE_URL:-https://maas-api.cn-huabei-1.xf-yun.com/v2/chat/completions}
+      - HARNESS_DB=postgresql://harness:harness@postgres:5432/harness
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - harness-data:/app/data
+    depends_on:
+      - redis
+      - postgres
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: harness
+      POSTGRES_PASSWORD: harness
+      POSTGRES_DB: harness
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on:
+      - harness
+    restart: unless-stopped
+
+volumes:
+  harness-data:
+  redis-data:
+  pg-data:
