@@ -91,14 +91,14 @@ class RSIEngine:
         self.store.execute("UPDATE candidate_version SET active=1 WHERE version=?", (version,))
 
     def rollback(self, version: str, to_version: str) -> CandidateVersion:
-        self.store.execute("UPDATE candidate_version SET active=0 WHERE version=?", (version,))
+        self.store.execute(
+            "UPDATE candidate_version SET active=0, baseline=? WHERE version=?",
+            (to_version, version),
+        )
         row = self.store.execute(
             "SELECT * FROM candidate_version WHERE version=?", (version,)
         ).fetchone()
-        item = self._row(row)
-        item.active = False
-        item.baseline = to_version
-        return item
+        return self._row(row)
 
     def gate(self, baseline: Metrics, candidate: Metrics) -> GateResult:
         checks = [
@@ -137,6 +137,12 @@ class RSIEngine:
         ).fetchone()
         return row["content"] if row else None
 
+    def active_version(self) -> str | None:
+        row = self.store.execute(
+            "SELECT version FROM candidate_version WHERE active=1 LIMIT 1"
+        ).fetchone()
+        return row["version"] if row else None
+
     def evolve(
         self,
         generator: Any,
@@ -150,7 +156,7 @@ class RSIEngine:
         the improve + no-regression gate passes; otherwise the previous active
         version is restored.
         """
-        previous_active = self.active_prompt()
+        previous_active = self.active_version()
         outcomes: list[dict[str, Any]] = []
         for label, count in sorted(self.cluster_failures().items()):
             kind, content = generator.generate(label, self.failure_samples(label))
@@ -173,6 +179,7 @@ class RSIEngine:
             entry["gate"] = gate.reason
             if gate.passed:
                 entry["activated"] = True
+                previous_active = candidate.version
             else:
                 self.store.execute(
                     "UPDATE candidate_version SET active=0 WHERE version=?", (candidate.version,)
