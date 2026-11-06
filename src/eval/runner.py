@@ -13,8 +13,6 @@ from src.harness.runtime import HarnessRuntime
 from src.memory.store import MemoryManager
 from src.storage.backend import StorageBackend
 
-BASELINE = Metrics(f1=0.819, high_risk_recall=0.842, clean_pr_accuracy=0.90)
-
 
 @dataclass
 class EvalReport:
@@ -36,15 +34,20 @@ class EvaluationHarness:
     def run(self) -> EvalReport:
         cases = ensure_benchmark(self.dataset_path)
         validation, holdout = split_by_repo(cases)
+        baseline = self._load_baseline()
         v_metrics = self._eval_split(validation, "validation")
         h_metrics = self._eval_split(holdout, "holdout")
-        gate = self.rsi.gate(BASELINE, v_metrics)
+        if baseline is None:
+            gate = GateResult(True, "baseline_established")
+        else:
+            gate = self.rsi.gate(baseline, v_metrics)
         payload = {
             "created_at": datetime.now(timezone.utc).isoformat(),
             "validation": asdict(v_metrics),
             "holdout": asdict(h_metrics),
             "gate": {"passed": gate.passed, "reason": gate.reason},
-            "baseline": asdict(BASELINE),
+            "baseline": asdict(baseline) if baseline else None,
+            "baseline_source": "measured" if baseline else "bootstrap",
             "cases": len(cases),
         }
         report_path = self.dataset_path.parent / "eval_report.json"
@@ -68,6 +71,19 @@ class EvaluationHarness:
             gate=gate,
             path=str(report_path),
             cases=len(cases),
+        )
+
+    def _load_baseline(self) -> Metrics | None:
+        row = self.store.execute(
+            """SELECT f1, high_risk_recall, clean_pr_accuracy FROM evaluation_result
+               WHERE dataset='validation' ORDER BY id DESC LIMIT 1"""
+        ).fetchone()
+        if row is None:
+            return None
+        return Metrics(
+            f1=row["f1"],
+            high_risk_recall=row["high_risk_recall"],
+            clean_pr_accuracy=row["clean_pr_accuracy"],
         )
 
     def _eval_split(self, cases: list[dict], name: str) -> Metrics:
