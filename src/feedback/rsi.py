@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Any, Callable
 
 from src.eval.metrics import Metrics
+from src.feedback.feedback import PRReviewFeedback
 from src.storage.backend import StorageBackend
 
 
@@ -30,7 +31,7 @@ class RSIEngine:
     def __init__(self, store: StorageBackend) -> None:
         self.store = store
 
-    def record_feedback(
+    def _insert_feedback(
         self,
         task_id: str,
         case_type: str,
@@ -53,6 +54,60 @@ class RSIEngine:
                 json.dumps(trajectory),
             ),
         )
+
+    def record_feedback(
+        self,
+        task_id: str,
+        case_type: str,
+        predicted: list[str],
+        expected: list[str],
+        confidence: float,
+        failure_label: str,
+        trajectory: list[str],
+    ) -> None:
+        self._insert_feedback(
+            task_id,
+            case_type,
+            predicted,
+            expected,
+            confidence,
+            failure_label,
+            trajectory,
+        )
+
+    def record_execution_feedback(self, feedback: PRReviewFeedback) -> None:
+        """Record real-PR-review feedback into the same ``feedback`` table.
+
+        Derives ``case_type`` / ``failure_label`` per rule from the set
+        difference between ``predicted`` and ``expected``, so real-execution
+        failures cluster with evaluation failures in :meth:`cluster_failures`.
+        """
+        predicted_set = set(feedback.predicted)
+        expected_set = set(feedback.expected)
+        false_alarms = sorted(predicted_set - expected_set)
+        missed = sorted(expected_set - predicted_set)
+        if not false_alarms and not missed:
+            return
+        for rule in false_alarms:
+            self.record_feedback(
+                task_id=feedback.task_id,
+                case_type="false_positive",
+                predicted=feedback.predicted,
+                expected=feedback.expected,
+                confidence=feedback.confidence,
+                failure_label=f"false_alarm:{rule}",
+                trajectory=feedback.trajectory,
+            )
+        for rule in missed:
+            self.record_feedback(
+                task_id=feedback.task_id,
+                case_type="false_negative",
+                predicted=feedback.predicted,
+                expected=feedback.expected,
+                confidence=feedback.confidence,
+                failure_label=f"missed:{rule}",
+                trajectory=feedback.trajectory,
+            )
 
     def cluster_failures(self) -> dict[str, int]:
         rows = self.store.execute(

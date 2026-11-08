@@ -1,4 +1,5 @@
 from src.eval.metrics import Metrics
+from src.feedback.feedback import PRReviewFeedback
 from src.feedback.rsi import RSIEngine
 from src.storage.sqlite_store import SQLiteStore
 
@@ -132,3 +133,40 @@ def test_evolve_skips_deduped_candidates(tmp_path):
     assert first[0]["deduped"] is True
     assert first[0]["gate"] is None  # deduped candidates skip evaluation and activation
     assert engine.active_prompt() == "prompt for missed_sql"
+
+
+def test_record_execution_feedback_clusters_like_eval(tmp_path):
+    engine = RSIEngine(SQLiteStore(tmp_path / "h.db"))
+    engine.record_execution_feedback(
+        PRReviewFeedback(
+            task_id="r1",
+            predicted=["xss"],
+            expected=[],
+            confidence=0.5,
+            trajectory=["review"],
+        )
+    )
+    engine.record_feedback(
+        task_id="e1",
+        case_type="false_positive",
+        predicted=["xss"],
+        expected=[],
+        confidence=0.5,
+        failure_label="false_alarm:xss",
+        trajectory=["identify"],
+    )
+    clusters = engine.cluster_failures()
+    assert clusters["false_alarm:xss"] == 2
+
+
+def test_record_execution_feedback_no_change_when_no_difference(tmp_path):
+    engine = RSIEngine(SQLiteStore(tmp_path / "h.db"))
+    engine.record_execution_feedback(
+        PRReviewFeedback(
+            task_id="r1",
+            predicted=["xss"],
+            expected=["xss"],
+            trajectory=["review"],
+        )
+    )
+    assert engine.cluster_failures() == {}
