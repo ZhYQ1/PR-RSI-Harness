@@ -4,6 +4,7 @@ from typing import Any, Callable
 
 from src.agent.agents import EvidenceVerifier, ResultValidator, RiskIdentifier, SecureFixer
 from src.agent.llm import EchoLLM, LLMClient
+from src.feedback.feedback import PRReviewFeedback
 from src.harness.runtime import PipelineResult
 from src.memory.compress import compress_diff
 from src.memory.context import ContextAssembler
@@ -29,7 +30,12 @@ class ReviewPipeline:
         self.fixer = SecureFixer()
         self.validator = ResultValidator()
 
-    def run(self, task: PRTask, checkpoint: dict[str, Any] | None) -> PipelineResult:
+    def run(
+        self,
+        task: PRTask,
+        checkpoint: dict[str, Any] | None,
+        review_feedback: PRReviewFeedback | None = None,
+    ) -> PipelineResult:
         compact, meta = compress_diff(task.diff, self.token_budget)
         critic_notes = self._load_critic_notes(task)
         context, context_meta = self.assembler.assemble(
@@ -58,6 +64,7 @@ class ReviewPipeline:
                 "context": context_meta,
                 "critic": critic.opinions,
             },
+            review_feedback=review_feedback,
         )
 
     def _remember(self, task: PRTask, verified) -> None:

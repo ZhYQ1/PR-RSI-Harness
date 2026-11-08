@@ -1,3 +1,4 @@
+from src.feedback.feedback import PRReviewFeedback
 from src.harness.retry import UnrecoverableError
 from src.harness.runtime import HarnessRuntime, PipelineResult
 from src.harness.state import TaskStatus
@@ -77,3 +78,55 @@ def test_runtime_resumes_from_checkpoint(tmp_path):
     assert result.task.status is TaskStatus.DONE
     loaded = store.load_checkpoint(task.id)
     assert loaded is not None
+
+
+class FeedbackPipeline:
+    def run(self, task, checkpoint, review_feedback=None):
+        return PipelineResult(
+            findings=["xss"],
+            patch="",
+            validated=True,
+            checkpoint={},
+            review_feedback=review_feedback,
+        )
+
+
+def test_runtime_records_review_feedback_on_success(tmp_path):
+    store = SQLiteStore(tmp_path / "h.db")
+    runtime = HarnessRuntime(store)
+    fb = PRReviewFeedback(
+        task_id="r1",
+        predicted=["xss"],
+        expected=[],
+        confidence=0.5,
+        trajectory=["review"],
+    )
+    result = runtime.submit_and_run(
+        repo="acme/api",
+        pr_number=7,
+        branch="feat",
+        diff="no issue",
+        pipeline=FeedbackPipeline(),
+        review_feedback=fb,
+    )
+    assert result.task.status is TaskStatus.DONE
+    rows = store.execute(
+        "SELECT case_type, failure_label FROM feedback WHERE task_id='r1'"
+    ).fetchall()
+    assert len(rows) == 1
+    assert rows[0]["case_type"] == "false_positive"
+    assert rows[0]["failure_label"] == "false_alarm:xss"
+
+
+def test_runtime_ignores_none_review_feedback(tmp_path):
+    store = SQLiteStore(tmp_path / "h.db")
+    runtime = HarnessRuntime(store)
+    result = runtime.submit_and_run(
+        repo="r",
+        pr_number=1,
+        branch="m",
+        diff="no issue",
+        pipeline=FeedbackPipeline(),
+    )
+    assert result.task.status is TaskStatus.DONE
+    assert store.execute("SELECT COUNT(*) AS n FROM feedback").fetchone()["n"] == 0

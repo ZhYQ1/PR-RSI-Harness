@@ -3,6 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Protocol
 
+from src.feedback.collector import ReviewFeedbackCollector
+from src.feedback.feedback import PRReviewFeedback
+from src.feedback.rsi import RSIEngine
 from src.harness.budget import DualBudget
 from src.harness.retry import RetryPolicy, UnrecoverableError, retry_with_backoff
 from src.harness.state import TaskStatus
@@ -18,10 +21,16 @@ class PipelineResult:
     validated: bool
     checkpoint: dict[str, Any] = field(default_factory=dict)
     details: dict[str, Any] = field(default_factory=dict)
+    review_feedback: PRReviewFeedback | None = None
 
 
 class Pipeline(Protocol):
-    def run(self, task: PRTask, checkpoint: dict[str, Any] | None) -> PipelineResult: ...
+    def run(
+        self,
+        task: PRTask,
+        checkpoint: dict[str, Any] | None,
+        review_feedback: PRReviewFeedback | None = None,
+    ) -> PipelineResult: ...
 
 
 @dataclass
@@ -40,6 +49,7 @@ class HarnessRuntime:
     ) -> None:
         self.store = store
         self.policy = RetryPolicy(max_attempts=max_attempts, base_delay=retry_delay, jitter=0)
+        self.collector = ReviewFeedbackCollector(RSIEngine(store))
 
     def submit_and_run(
         self,
@@ -51,6 +61,7 @@ class HarnessRuntime:
         max_steps: int = 40,
         max_seconds: float = 120,
         tenant: str = "default",
+        review_feedback: PRReviewFeedback | None = None,
     ) -> RunOutcome:
         task = self.store.create_task(
             repo=repo,
@@ -61,12 +72,22 @@ class HarnessRuntime:
             max_seconds=max_seconds,
             tenant=tenant,
         )
-        return self._execute(task.id, pipeline)
+        return self._execute(task.id, pipeline, review_feedback)
 
-    def resume(self, task_id: str, pipeline: Pipeline) -> RunOutcome:
-        return self._execute(task_id, pipeline)
+    def resume(
+        self,
+        task_id: str,
+        pipeline: Pipeline,
+        review_feedback: PRReviewFeedback | None = None,
+    ) -> RunOutcome:
+        return self._execute(task_id, pipeline, review_feedback)
 
-    def _execute(self, task_id: str, pipeline: Pipeline) -> RunOutcome:
+    def _execute(
+        self,
+        task_id: str,
+        pipeline: Pipeline,
+        review_feedback: PRReviewFeedback | None = None,
+    ) -> RunOutcome:
         task = self.store.get_task(task_id)
         if task.status is TaskStatus.PENDING:
             self.store.set_status(task_id, TaskStatus.RUNNING)
@@ -79,13 +100,20 @@ class HarnessRuntime:
             if current.status is TaskStatus.CHECKPOINT:
                 self.store.set_status(task_id, TaskStatus.RUNNING)
             try:
-                result = pipeline.run(self.store.get_task(task_id), checkpoint)
+                if review_feedback is None:
+                    result = pipeline.run(self.store.get_task(task_id), checkpoint)
+                else:
+                    result = pipeline.run(
+                        self.store.get_task(task_id), checkpoint, review_feedback=review_feedback
+                    )
             except Exception:
                 self.store.bump_retry(task_id)
                 observe_retry(self.store.get_task(task_id))
                 raise
             self.store.save_checkpoint(task_id, result.checkpoint or {"ok": True})
             self._advance_phases(task_id)
+            if result.review_feedback is not None:
+                self.collector.record(task_id, result.review_feedback)
             return result
 
         try:
