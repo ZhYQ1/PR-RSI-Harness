@@ -92,6 +92,15 @@ pr-harness evolve   # 2. 聚类失败 -> 生成 Prompt 候选 -> 去重 -> 试�
                     #    门禁通过保留 active，失败自动回滚
 ```
 
+### 真实执行反馈的自进化
+
+真实 PR 审查执行也能驱动 RSI 自进化，不局限于评测基准集：
+
+- `PipelineResult` 可携带可选 `review_feedback`，`HarnessRuntime` 在真实任务执行成功后通过 `ReviewFeedbackCollector` 把它写入同一 `feedback` 表（findings 作为 predicted，人工/策略给定的期望风险集作为 expected）。
+- 评测反馈与真实执行反馈共用 `feedback` 表的聚类与门禁进化闭环（`cluster_failures` → 生成候选 → 去重 → 试探激活 → 重评测 → 门禁 → 激活/回滚）。
+- 也可以手动记录真实执行反馈：`pr-harness review-feedback --task-id <task_id> --predicted '<json>' --expected '<json>' --confidence 0.5 --trajectory '<json>'`。
+- 评测仍作为基线、门禁把关与持续学习基准保留。
+
 ## 测试
 
 ```bash
