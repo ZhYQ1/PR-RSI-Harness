@@ -141,3 +141,54 @@ def test_cli_evolve_proposes_and_gates(tmp_path, capsys):
     assert entry["deduped"] == 0
     assert entry["activated"] is False  # no metric improvement offline -> rollback
     assert entry["gate"] == "no_improvement"
+
+
+def test_cli_review_feedback_records(tmp_path, capsys):
+    db = tmp_path / "h.db"
+    code = main(
+        [
+            "--db",
+            str(db),
+            "review-feedback",
+            "--task-id",
+            "r1",
+            "--predicted",
+            '["xss"]',
+            "--expected",
+            "[]",
+            "--confidence",
+            "0.5",
+            "--trajectory",
+            '["review"]',
+        ]
+    )
+    assert code == 0
+    assert _last_json(capsys) == {"task_id": "r1", "recorded": True}
+    rows = SQLiteStore(db).execute(
+        "SELECT case_type, failure_label FROM feedback WHERE task_id='r1'"
+    ).fetchall()
+    assert len(rows) == 1
+    assert rows[0]["case_type"] == "false_positive"
+    assert rows[0]["failure_label"] == "false_alarm:xss"
+
+
+def test_cli_review_feedback_skips_when_no_difference(tmp_path, capsys):
+    db = tmp_path / "h.db"
+    code = main(
+        [
+            "--db",
+            str(db),
+            "review-feedback",
+            "--task-id",
+            "r2",
+            "--predicted",
+            '["xss"]',
+            "--expected",
+            '["xss"]',
+        ]
+    )
+    assert code == 0
+    assert _last_json(capsys) == {"task_id": "r2", "recorded": True}
+    assert (
+        SQLiteStore(db).execute("SELECT COUNT(*) AS n FROM feedback").fetchone()["n"] == 0
+    )

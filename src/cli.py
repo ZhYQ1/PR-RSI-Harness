@@ -46,6 +46,19 @@ def _build_parser() -> argparse.ArgumentParser:
     evolve = sub.add_parser("evolve", help="cluster failures, propose prompt candidates, apply gate")
     evolve.add_argument("--dataset", default=None, help="path to benchmark JSON")
 
+    review_feedback = sub.add_parser(
+        "review-feedback", help="record structured feedback from a real PR review execution"
+    )
+    review_feedback.add_argument("--task-id", required=True)
+    review_feedback.add_argument(
+        "--predicted", required=True, help="JSON list of risk rule names flagged"
+    )
+    review_feedback.add_argument(
+        "--expected", required=True, help="JSON list of ground-truth risk rule names for this PR"
+    )
+    review_feedback.add_argument("--confidence", type=float, default=0.5)
+    review_feedback.add_argument("--trajectory", default="[]", help="JSON list of trace events")
+
     replay = sub.add_parser("replay", help="replay a task trace and attribute failures")
     replay.add_argument("--task-id", required=True)
 
@@ -157,6 +170,22 @@ def main(argv: list[str] | None = None) -> int:
             harness.dataset_path = Path(args.dataset)
         proposals = harness.rsi.evolve(CandidateGenerator(), evaluate=lambda: harness.run().validation)
         _print(proposals)
+        return 0
+
+    if args.command == "review-feedback":
+        from src.feedback.feedback import PRReviewFeedback
+        from src.feedback.rsi import RSIEngine
+
+        rsi = RSIEngine(store)
+        feedback = PRReviewFeedback(
+            task_id=args.task_id,
+            predicted=json.loads(args.predicted),
+            expected=json.loads(args.expected),
+            confidence=args.confidence,
+            trajectory=json.loads(args.trajectory),
+        )
+        rsi.record_execution_feedback(feedback)
+        _print({"task_id": args.task_id, "recorded": True})
         return 0
 
     if args.command == "replay":
