@@ -37,6 +37,9 @@ credentials*.json
 .vscode/
 .trae/
 
+# Worktrees (git worktree scratch)
+.worktrees/
+
 # Docs: keep only README
 *.md
 !README.md
