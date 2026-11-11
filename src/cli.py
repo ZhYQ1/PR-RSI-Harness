@@ -16,6 +16,7 @@ from src.observability.metrics import start_metrics_server
 from src.observability.trace import TraceReplayer
 from src.storage.events import RedisStreamBus
 from src.storage.factory import open_store
+from src.git.ingestion import extract_pr_diff
 
 DEFAULT_DB = Path("data") / "harness.db"
 
@@ -73,6 +74,17 @@ def _build_parser() -> argparse.ArgumentParser:
 
     serve = sub.add_parser("serve", help="expose Prometheus metrics")
     serve.add_argument("--port", type=int, default=8000)
+
+    submit_git = sub.add_parser(
+        "submit-from-git", help="submit a PR diff fetched from a Git repository"
+    )
+    submit_git.add_argument("--repo-url", required=True, help="Git 仓库 URL 或本地路径")
+    submit_git.add_argument("--pr", type=int, required=True, help="PR / 合并请求编号")
+    submit_git.add_argument("--branch", default="main", help="基准分支，默认 main")
+    submit_git.add_argument("--tenant", default="default", help="租户名，默认 default")
+    submit_git.add_argument("--token", default=None, help="私有仓库 HTTPS 访问令牌")
+    submit_git.add_argument("--work-dir", default=None, help="Git 操作工作目录，默认自动创建临时目录")
+    submit_git.add_argument("--no-shallow", action="store_true", help="禁用浅克隆")
 
     return parser
 
@@ -215,6 +227,28 @@ def main(argv: list[str] | None = None) -> int:
             ]
         )
         return 0
+
+    if args.command == "submit-from-git":
+        diff = extract_pr_diff(
+            repo_url=args.repo_url,
+            pr_number=args.pr,
+            branch=args.branch,
+            work_dir=args.work_dir,
+            token=args.token,
+            shallow=not args.no_shallow,
+        )
+        runtime = HarnessRuntime(store)
+        pipeline = ReviewPipeline(memory=MemoryManager(store))
+        outcome = runtime.submit_and_run(
+            repo=args.repo_url,
+            pr_number=args.pr,
+            branch=args.branch,
+            diff=diff,
+            pipeline=pipeline,
+            tenant=args.tenant,
+        )
+        _print(_outcome_payload(runtime, outcome))
+        return 0 if outcome.error is None else 1
 
     return 2
 
