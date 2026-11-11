@@ -67,6 +67,21 @@ pr-harness --db data/harness.db serve --port 8000
 
 `--db` 同时接受 SQLite 路径与 `postgresql://` 连接串。
 
+### 本地 pre-push 与 CI 集成
+
+**本地 pre-push 钩子**：push 前自动审查本次推送的 diff，findings 直接打印在终端。
+
+```bash
+cp scripts/pre-push .git/hooks/pre-push         # Git Bash / Linux / macOS
+Copy-Item scripts/pre-push .git/hooks/pre-push  # PowerShell
+```
+
+- 已有分支以远端引用为基线做 `base...HEAD` diff，新分支回退到 `origin/HEAD`；删除分支、无改动自动跳过
+- 默认只提示不拦截 push，设置 `PR_HARNESS_BLOCK=1` 后执行失败才阻止推送
+- 可选环境变量：`PR_HARNESS_DB`、`PR_HARNESS_REPO`、`PR_HARNESS_PR`、`PR_HARNESS_PYTHON`
+
+**GitHub Actions**：`.github/workflows/pr-risk-review.yml` 在 PR 的 `opened / synchronize / reopened` 时自动运行风险审查，结果写入 Job Summary，并上传 `pr.diff` 与 `review.json` artifact。工作流只读仓库、不回写 PR 评论；在仓库 Secrets 配置 `SPARK_API_KEY` 即可启用 LLM 增强，未配置时离线规则扫描。
+
 ## 配置
 
 | 环境变量 | 说明 |
@@ -122,5 +137,7 @@ src/
 ├── storage/          # 存储抽象、SQLite/PG 后端、Redis Streams 事件总线
 └── cli.py            # 统一命令行入口
 deploy/               # Dockerfile、docker-compose、prometheus.yml
+scripts/              # pre-push 等本地 Git 钩子
+.github/workflows/    # PR 风险审查 CI
 tests/                # 单元测试 + 可选 PG/Redis 集成测试
 ```
