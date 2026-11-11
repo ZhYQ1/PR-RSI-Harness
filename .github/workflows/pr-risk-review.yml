@@ -6,6 +6,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write
 
 jobs:
   risk-review:
@@ -29,7 +30,6 @@ jobs:
 
       - name: Run risk review
         env:
-          # Optional: without this secret the harness runs in deterministic offline mode.
           SPARK_API_KEY: ${{ secrets.SPARK_API_KEY }}
         run: |
           set -o pipefail
@@ -38,7 +38,22 @@ jobs:
             --repo "${GITHUB_REPOSITORY}" \
             --pr "${{ github.event.pull_request.number }}" \
             --branch "${GITHUB_HEAD_REF}" \
-            --diff-file pr.diff | tee data/review.json
+            --diff-file pr.diff > data/review.json 2>&1 || true
+
+      - name: Check findings and block high-risk PRs
+        if: always()
+        run: |
+          if [ -f data/review.json ]; then
+            FINDINGS_COUNT=$(python3 -c "import json; d=json.load(open('data/review.json')); print(len(d.get('findings', [])))")
+            echo "Detected $FINDINGS_COUNT risk(s)"
+            if [ "$FINDINGS_COUNT" -gt 0 ]; then
+              echo "::warning::PR-RSI Harness 检测到 $FINDINGS_COUNT 个安全风险，请修复后再合并"
+              exit 1
+            fi
+          else
+            echo "::error::PR-RSI Harness 未产生评审结果"
+            exit 1
+          fi
 
       - name: Publish summary
         if: always()
