@@ -16,9 +16,11 @@ dependencies = [
 dev = ["pytest>=8"]
 redis = ["redis>=5"]
 postgres = ["psycopg[binary]>=3.2"]
+webhook = ["fastapi>=0.100", "uvicorn[standard]>=0.20"]
 
 [project.scripts]
 pr-harness = "src.cli:main"
+pr-harness-webhook = "src.webhook.server:create_app"
 
 [tool.setuptools.packages.find]
 where = ["."]
