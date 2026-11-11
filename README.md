@@ -35,7 +35,8 @@
 ## 快速开始
 
 ```bash
-pip install -e .            # 基础安装（SQLite 后端，离线可跑）
+pip install -e .                         # 基础安装（SQLite 后端，离线可跑）
+pip install -e ".[webhook]"              # 追加 Webhook 服务依赖（FastAPI + Uvicorn）
 pip install -e ".[postgres,redis,dev]"   # 完整安装
 ```
 
@@ -46,6 +47,10 @@ pip install -e ".[postgres,redis,dev]"   # 完整安装
 ```bash
 # 提交 PR Diff 审查
 pr-harness --db data/harness.db submit --repo acme/api --pr 7 --branch feat --diff-file pr.diff
+
+# 直接从 Git 仓库拉取 PR diff 并审查（支持 GitHub / GitLab / 本地仓库路径）
+pr-harness --db data/harness.db submit-from-git \
+  --repo-url https://github.com/acme/api.git --pr 7 --branch main --token <TOKEN>
 
 # 断点续练
 pr-harness --db data/harness.db resume --task-id <task_id>
@@ -67,7 +72,7 @@ pr-harness --db data/harness.db serve --port 8000
 
 `--db` 同时接受 SQLite 路径与 `postgresql://` 连接串。
 
-### 本地 pre-push 与 CI 集成
+### 接入方式：pre-push 钩子、CI 与 Webhook
 
 **本地 pre-push 钩子**：push 前自动审查本次推送的 diff，findings 直接打印在终端。
 
@@ -80,7 +85,31 @@ Copy-Item scripts/pre-push .git/hooks/pre-push  # PowerShell
 - 默认只提示不拦截 push，设置 `PR_HARNESS_BLOCK=1` 后执行失败才阻止推送
 - 可选环境变量：`PR_HARNESS_DB`、`PR_HARNESS_REPO`、`PR_HARNESS_PR`、`PR_HARNESS_PYTHON`
 
-**GitHub Actions**：`.github/workflows/pr-risk-review.yml` 在 PR 的 `opened / synchronize / reopened` 时自动运行风险审查，结果写入 Job Summary，并上传 `pr.diff` 与 `review.json` artifact。工作流只读仓库、不回写 PR 评论；在仓库 Secrets 配置 `SPARK_API_KEY` 即可启用 LLM 增强，未配置时离线规则扫描。
+**GitHub Actions**：`.github/workflows/pr-risk-review.yml` 在 PR 的 `opened / synchronize / reopened` 时自动运行风险审查，结果写入 Job Summary，并上传 `pr.diff` 与 `review.json` artifact。
+
+- **风险门禁**：检出 findings 时以 `::warning::` 输出告警并使 job 失败，PR 检查不通过；配合分支保护规则即可阻止高危 PR 合并。未产生评审结果同样判定失败
+- 权限为 `contents: read` + `pull-requests: write`，告警以检查注解形式展示，不自动创建 PR 评论
+- 在仓库 Secrets 配置 `SPARK_API_KEY` 即可启用 LLM 增强，未配置时走离线规则扫描
+
+**GitLab CI**：`.gitlab-ci.yml` 在 `merge_requests` 流水线中生成 MR diff 并运行审查，findings 非空时任务失败以阻止合并，`pr.diff` 与 `data/review.json` 作为 artifact 保留 7 天。
+
+### Webhook 服务（自动接收 PR / MR 事件）
+
+安装 `webhook` extra 后可启动常驻服务，接收 GitHub / GitLab 事件并自动拉取 diff 审查：
+
+```bash
+python scripts/run_webhook.py       # 默认监听 0.0.0.0:8080
+```
+
+| 端点 | 说明 |
+| --- | --- |
+| `POST /webhook/github` | 接收 `pull_request` 事件，校验 `X-Hub-Signature-256`（HMAC SHA256） |
+| `POST /webhook/gitlab` | 接收 `Merge Request Hook`，校验 `X-Gitlab-Token` |
+| `GET /health` | 健康检查 |
+
+- 只处理 `opened / synchronize / reopened`（GitHub）与 `open / update / reopen`（GitLab），其他事件或动作返回 200 `ignored`
+- 事件 ID 内存幂等（TTL 1 小时），避免同一 PR 重复触发；事件返回 202 后由后台任务异步完成 diff 拉取与审查
+- 配置 `GITHUB_TOKEN` / `GITLAB_TOKEN` 后，会把风险报告评论回写到 PR / MR（findings 列表 + 建议修复补丁）；未配置则仅记录日志
 
 ## 配置
 
@@ -90,6 +119,12 @@ Copy-Item scripts/pre-push .git/hooks/pre-push  # PowerShell
 | `SPARK_MODEL` / `SPARK_BASE_URL` | 模型名与 OpenAI 兼容接口地址 |
 | `REDIS_URL` | 设置后自动挂载 Redis Streams 事件总线 |
 | `TEST_PG_DSN` | 运行 PostgreSQL 集成测试（未设置时对应测试跳过） |
+| `HARNESS_DB` | Webhook 服务使用的存储连接串（默认 `data/harness.db`） |
+| `WEBHOOK_HOST` / `WEBHOOK_PORT` | Webhook 监听地址与端口（默认 `0.0.0.0:8080`） |
+| `WEBHOOK_RELOAD` | 设为 `true` 时开启 Uvicorn 热重载 |
+| `GITHUB_WEBHOOK_SECRET` | GitHub Webhook 签名密钥，未设置时拒绝所有 GitHub 事件 |
+| `GITLAB_WEBHOOK_TOKEN` | GitLab Webhook 令牌，未设置时拒绝所有 GitLab 事件 |
+| `GITHUB_TOKEN` / `GITLAB_TOKEN` | PR / MR 评论回写用的 API 令牌，未设置时跳过回写 |
 
 ## Docker 部署
 
@@ -97,7 +132,7 @@ Copy-Item scripts/pre-push .git/hooks/pre-push  # PowerShell
 docker compose -f deploy/docker-compose.yml up --build -d
 ```
 
-编排内容：`harness`（Prometheus 指标 :8000，PG 后端，Redis 事件流）+ `postgres` + `redis` + `prometheus`（:9090，抓取 harness 指标）。PG schema 首次启动自动创建。
+编排内容：`harness`（Prometheus 指标 :8000，PG 后端，Redis 事件流）+ `webhook`（:8080，接收 GitHub / GitLab 事件，PG 后端 + Redis 事件流）+ `postgres` + `redis` + `prometheus`（:9090，抓取 harness 指标）。PG schema 首次启动自动创建。Webhook 密钥通过 `GITHUB_WEBHOOK_SECRET` / `GITLAB_WEBHOOK_TOKEN` 环境变量注入。
 
 ## 评测与自进化闭环
 
@@ -133,11 +168,14 @@ src/
 ├── memory/           # Diff 压缩、上下文组装器、三层记忆
 ├── feedback/         # RSI 引擎、候选生成器（LLM+模板回退）
 ├── eval/             # 基准集、指标计算、评测编排
+├── git/              # 从 GitHub / GitLab / 本地仓库提取 PR diff
+├── webhook/          # FastAPI 服务、签名验证、幂等与评论回写
 ├── observability/    # Prometheus 指标、Trace 回放与失败归因
 ├── storage/          # 存储抽象、SQLite/PG 后端、Redis Streams 事件总线
 └── cli.py            # 统一命令行入口
-deploy/               # Dockerfile、docker-compose、prometheus.yml
-scripts/              # pre-push 等本地 Git 钩子
-.github/workflows/    # PR 风险审查 CI
+deploy/               # Dockerfile、Dockerfile.webhook、docker-compose、prometheus.yml
+scripts/              # pre-push 钩子、Webhook 启动脚本
+.github/workflows/    # GitHub PR 风险审查 CI
+.gitlab-ci.yml        # GitLab MR 风险审查流水线
 tests/                # 单元测试 + 可选 PG/Redis 集成测试
 ```
