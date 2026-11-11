@@ -10,6 +10,7 @@ from typing import Any
 
 from src.agent.pipeline import ReviewPipeline
 from src.eval.runner import EvaluationHarness
+from src.feedback.rsi import RSIEngine
 from src.harness.runtime import HarnessRuntime
 from src.memory.store import MemoryManager
 from src.observability.metrics import start_metrics_server
@@ -23,6 +24,19 @@ DEFAULT_DB = Path("data") / "harness.db"
 
 def _print(payload: Any) -> None:
     print(json.dumps(payload, ensure_ascii=False, indent=2))
+
+
+def _build_pipeline(store) -> ReviewPipeline:
+    """Build a ReviewPipeline that consumes the currently active RSI prompt.
+
+    When no active prompt version exists, the provider returns None and the
+    pipeline falls back to ``DEFAULT_SYSTEM_PROMPT``.
+    """
+    rsi = RSIEngine(store)
+    return ReviewPipeline(
+        memory=MemoryManager(store),
+        prompt_provider=rsi.active_prompt,
+    )
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -139,7 +153,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "submit":
         diff = _read_diff(args)
         runtime = HarnessRuntime(store)
-        pipeline = ReviewPipeline(memory=MemoryManager(store))
+        pipeline = _build_pipeline(store)
         outcome = runtime.submit_and_run(
             repo=args.repo,
             pr_number=args.pr,
@@ -153,7 +167,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "resume":
         runtime = HarnessRuntime(store)
-        pipeline = ReviewPipeline(memory=MemoryManager(store))
+        pipeline = _build_pipeline(store)
         outcome = runtime.resume(args.task_id, pipeline)
         _print(_outcome_payload(runtime, outcome))
         return 0 if outcome.error is None else 1
@@ -186,7 +200,6 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "review-feedback":
         from src.feedback.feedback import PRReviewFeedback
-        from src.feedback.rsi import RSIEngine
 
         rsi = RSIEngine(store)
         feedback = PRReviewFeedback(
@@ -238,7 +251,7 @@ def main(argv: list[str] | None = None) -> int:
             shallow=not args.no_shallow,
         )
         runtime = HarnessRuntime(store)
-        pipeline = ReviewPipeline(memory=MemoryManager(store))
+        pipeline = _build_pipeline(store)
         outcome = runtime.submit_and_run(
             repo=args.repo_url,
             pr_number=args.pr,
