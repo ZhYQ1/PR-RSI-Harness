@@ -1,0 +1,61 @@
+name: PR Risk Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  risk-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install pr-harness
+        run: python -m pip install .
+
+      - name: Generate PR diff
+        run: git diff "origin/${GITHUB_BASE_REF}...HEAD" > pr.diff
+
+      - name: Run risk review
+        env:
+          # Optional: without this secret the harness runs in deterministic offline mode.
+          SPARK_API_KEY: ${{ secrets.SPARK_API_KEY }}
+        run: |
+          set -o pipefail
+          mkdir -p data
+          pr-harness --db data/harness.db submit \
+            --repo "${GITHUB_REPOSITORY}" \
+            --pr "${{ github.event.pull_request.number }}" \
+            --branch "${GITHUB_HEAD_REF}" \
+            --diff-file pr.diff | tee data/review.json
+
+      - name: Publish summary
+        if: always()
+        run: |
+          {
+            echo "### PR-RSI Harness risk review"
+            echo '```json'
+            cat data/review.json 2>/dev/null || echo '{"error": "review did not produce output"}'
+            echo '```'
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Upload review artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-risk-review
+          path: |
+            pr.diff
+            data/review.json
+          if-no-files-found: warn
